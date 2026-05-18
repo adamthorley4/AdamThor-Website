@@ -1,6 +1,7 @@
 'use client';
 
-import ScrollExpandMedia from '@/components/ui/scroll-expansion-hero';
+import React from 'react';
+import VideoHero from '@/components/ui/video-hero';
 import { RadialScrollGallery } from '@/components/ui/radial-scroll-gallery';
 import { Gallery4, type Gallery4Item } from '@/components/ui/gallery4';
 import { Check } from 'lucide-react';
@@ -150,8 +151,34 @@ function BuildsSection() {
 }
 
 function ContactSection() {
+  const [form, setForm] = React.useState({ name: '', email: '', message: '' });
+  const [status, setStatus] = React.useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('sending');
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+    setStatus(res.ok ? 'sent' : 'error');
+  };
+
+  const inputStyle = {
+    width: '100%',
+    background: 'transparent',
+    border: 'none',
+    borderBottom: '1px solid #1c1c1c',
+    padding: '1rem 0',
+    color: '#EDE8E0',
+    fontFamily: 'var(--font-jost)',
+    fontSize: '0.9rem',
+    outline: 'none',
+  } as React.CSSProperties;
+
   return (
-    <section className='w-full px-6 py-24' style={{ borderTop: '1px solid #1c1c1c' }}>
+    <section id='contact' className='w-full px-6 py-24' style={{ borderTop: '1px solid #1c1c1c' }}>
       <div className='max-w-7xl mx-auto'>
         <div className='flex items-center gap-5 mb-16'>
           <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '0.65rem', color: '#C5A05A', letterSpacing: '0.1em' }}>03</span>
@@ -161,13 +188,7 @@ function ContactSection() {
           <div className='flex-1 h-px' style={{ background: '#1c1c1c' }} />
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-16 items-center'>
-          <p style={{
-            fontFamily: 'var(--font-cormorant)',
-            fontSize: 'clamp(3rem, 7vw, 7rem)',
-            fontWeight: 300,
-            lineHeight: 0.95,
-            letterSpacing: '-0.025em',
-          }}>
+          <p style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(3rem, 7vw, 7rem)', fontWeight: 300, lineHeight: 0.95, letterSpacing: '-0.025em' }}>
             Tell me about your business.<br />
             <em style={{ color: '#C5A05A' }}>I&apos;ll find the gaps.</em>
           </p>
@@ -182,7 +203,7 @@ function ContactSection() {
                 href={link.href}
                 target={link.href.startsWith('http') ? '_blank' : undefined}
                 rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                className='flex items-center gap-4 py-5 group'
+                className='flex items-center gap-4 py-5'
                 style={{ borderBottom: '1px solid #1c1c1c', textDecoration: 'none', color: '#EDE8E0' }}
               >
                 <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '0.6rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#575757', width: '5rem', flexShrink: 0 }}>
@@ -191,12 +212,70 @@ function ContactSection() {
                 <span style={{ fontFamily: 'var(--font-jost)', fontSize: '0.9rem', flex: 1 }}>
                   {link.value}
                 </span>
-                <svg width='18' height='18' viewBox='0 0 24 24' fill='none' style={{ opacity: 0.3, transition: 'opacity 0.2s, transform 0.2s' }}>
+                <svg width='18' height='18' viewBox='0 0 24 24' fill='none' style={{ opacity: 0.3 }}>
                   <path d='M5 12h14M13 6l6 6-6 6' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' />
                 </svg>
               </a>
             ))}
-            <a href='mailto:adam@adamthor.co.uk' />
+
+            {/* Contact form */}
+            <form onSubmit={handleSubmit} className='mt-10 flex flex-col gap-0'>
+              <div style={{ borderBottom: '1px solid #1c1c1c', marginBottom: 0 }}>
+                <input
+                  required
+                  placeholder='Your name'
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  style={inputStyle}
+                />
+              </div>
+              <div style={{ borderBottom: '1px solid #1c1c1c' }}>
+                <input
+                  required
+                  type='email'
+                  placeholder='Your email'
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  style={inputStyle}
+                />
+              </div>
+              <div style={{ borderBottom: '1px solid #1c1c1c' }}>
+                <textarea
+                  required
+                  rows={4}
+                  placeholder='Tell me about your business...'
+                  value={form.message}
+                  onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  style={{ ...inputStyle, resize: 'none' }}
+                />
+              </div>
+              <div className='mt-8 flex items-center justify-between'>
+                <button
+                  type='submit'
+                  disabled={status === 'sending' || status === 'sent'}
+                  style={{
+                    fontFamily: 'var(--font-dm-mono)',
+                    fontSize: '0.65rem',
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    color: status === 'sent' ? '#C5A05A' : '#EDE8E0',
+                    background: 'transparent',
+                    border: '1px solid',
+                    borderColor: status === 'sent' ? '#C5A05A' : '#2a2a2a',
+                    padding: '0.85rem 2rem',
+                    cursor: status === 'sent' ? 'default' : 'pointer',
+                    transition: 'border-color 0.2s, color 0.2s',
+                  }}
+                >
+                  {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Message sent' : 'Send message'}
+                </button>
+                {status === 'error' && (
+                  <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '0.6rem', color: '#8a3a3a', letterSpacing: '0.1em' }}>
+                    Something went wrong — try emailing directly.
+                  </span>
+                )}
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -209,9 +288,9 @@ function ContactSection() {
 function Nav() {
   return (
     <nav className='fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-8 py-6' style={{ background: 'linear-gradient(to bottom, rgba(7,7,7,0.95), transparent)' }}>
-      <span style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '0.7rem', letterSpacing: '0.25em', color: '#C5A05A' }}>AT</span>
+      <a href='#top' onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '0.7rem', letterSpacing: '0.25em', color: '#C5A05A', textDecoration: 'none', cursor: 'pointer' }}>AT</a>
       <a href='#contact' style={{ fontFamily: 'var(--font-dm-mono)', fontSize: '0.65rem', letterSpacing: '0.18em', color: '#575757', textDecoration: 'none', textTransform: 'uppercase' }}>
-        Get in touch
+        Work with me
       </a>
     </nav>
   );
@@ -223,15 +302,11 @@ export default function Home() {
   return (
     <>
       <Nav />
-      <ScrollExpandMedia
-        mediaType='image'
-        mediaSrc='https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=1280&q=80'
-        bgImageSrc='https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80'
-        title='Adam Thor'
-        date='AI Developer'
-        scrollToExpand='Scroll to explore'
-        textBlend
-      >
+      <VideoHero
+        src='/hero-video.mp4'
+        subtitle='AI Developer'
+      />
+      <main style={{ background: '#070707' }}>
         <ApproachSection />
         <BuildsSection />
         <ContactSection />
@@ -239,7 +314,7 @@ export default function Home() {
           <span>© 2026 Adam Thor</span>
           <span style={{ color: '#8a6e3a' }}>adamthor.co.uk</span>
         </footer>
-      </ScrollExpandMedia>
+      </main>
     </>
   );
 }

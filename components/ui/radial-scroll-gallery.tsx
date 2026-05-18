@@ -140,8 +140,9 @@ export const RadialScrollGallery = forwardRef<HTMLDivElement, RadialScrollGaller
               scrollTrigger: { trigger: pinRef.current, start: 'top 80%', toggleActions: 'play none none reverse' },
             }
           );
+          const totalRotation = ((childrenCount - 1) / childrenCount) * 360;
           gsap.to(containerRef.current, {
-            rotation: '-=360', ease: 'none',
+            rotation: `-=${totalRotation}`, ease: 'none',
             scrollTrigger: {
               trigger: pinRef.current, pin: true, start: startTrigger,
               end: `+=${scrollDuration}`, scrub: 1, invalidateOnRefresh: true,
